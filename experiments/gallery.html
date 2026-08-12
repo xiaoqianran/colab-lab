@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Taichi × Colab 试验结果</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #141a2e;
+      --ink: #e8eefc;
+      --muted: #93a0c2;
+      --line: #2a3558;
+      --accent: #5eead4;
+      --accent-2: #fb7185;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #1b2a55 0%, transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, #3b1d3a 0%, transparent 50%),
+        var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+    header {
+      padding: 48px 24px 16px;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 2rem; margin: 0 0 8px; letter-spacing: -0.03em; }
+    .sub { color: var(--muted); max-width: 720px; }
+    .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .pill {
+      border: 1px solid var(--line);
+      background: rgba(20, 26, 46, 0.7);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 12px;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      max-width: 1120px;
+      margin: 24px auto;
+      padding: 0 24px;
+    }
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+    .stat b { display: block; font-size: 1.25rem; color: var(--accent); }
+    .stat span { color: var(--muted); font-size: 12px; }
+    section {
+      max-width: 1120px;
+      margin: 0 auto 48px;
+      padding: 0 24px;
+    }
+    h2 {
+      font-size: 1.25rem;
+      margin: 32px 0 8px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 8px;
+    }
+    p.note { color: var(--muted); margin-top: 0; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .card img {
+      display: block;
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      background: #080c18;
+      cursor: zoom-in;
+    }
+    .card.wide img { height: 280px; object-fit: contain; }
+    figcaption {
+      padding: 10px 12px 14px;
+      font-size: 13px;
+    }
+    figcaption strong { display: block; }
+    figcaption em { color: var(--muted); font-style: normal; }
+    .film {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    @media (max-width: 800px) { .film { grid-template-columns: repeat(2, 1fr); } }
+    .film img { height: 110px; object-fit: cover; width: 100%; cursor: zoom-in; border-radius: 8px; border: 1px solid var(--line); }
+    dialog {
+      border: 0;
+      padding: 0;
+      background: transparent;
+      max-width: min(96vw, 1100px);
+    }
+    dialog::backdrop { background: rgba(4, 8, 18, 0.82); }
+    dialog img { width: 100%; height: auto; border-radius: 12px; display: block; }
+    footer { color: var(--muted); text-align: center; padding: 24px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Taichi × Colab 试验结果</h1>
+    <p class="sub">CPU 套件在会话 <code>866d93</code> 上跑完；官方 Julia / MPM88 在 Tesla T4（CUDA）会话 <code>t4</code> 上跑完。Colab 无 GUI，全部用 <code>ti.tools.imwrite</code> 出图。</p>
+    <div class="pills">
+      <span class="pill">Taichi 1.7.4</span>
+      <span class="pill">CPU x64</span>
+      <span class="pill">CUDA T4 15GB</span>
+      <span class="pill">google-colab-cli</span>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><b>6.42×</b><span>CPU Mandelbrot vs NumPy</span></div>
+    <div class="stat"><b>0.076 ms</b><span>T4 Julia 稳态每帧</span></div>
+    <div class="stat"><b>1.79 s</b><span>MPM88 280×50 substeps</span></div>
+    <div class="stat"><b>22×</b><span>T4 atomic reduction vs NumPy</span></div>
+  </div>
+
+  <section>
+    <h2>T4 / CUDA · 官方 Hello World Julia</h2>
+    <p class="note"><code>@ti.func complex_sqr</code> + 并行 <code>paint</code>。1024×512，12 帧，<code>c = (-0.8, 0.2 cos t)</code>。稳态 0.076 ms/帧。</p>
+    <div class="film" id="julia-film">
+      <img src="outputs_t4/01_julia_t00.png" alt="Julia t00" />
+      <img src="outputs_t4/01_julia_t01.png" alt="Julia t01" />
+      <img src="outputs_t4/01_julia_t02.png" alt="Julia t02" />
+      <img src="outputs_t4/01_julia_t03.png" alt="Julia t03" />
+      <img src="outputs_t4/01_julia_t04.png" alt="Julia t04" />
+      <img src="outputs_t4/01_julia_t05.png" alt="Julia t05" />
+      <img src="outputs_t4/01_julia_t06.png" alt="Julia t06" />
+      <img src="outputs_t4/01_julia_t07.png" alt="Julia t07" />
+      <img src="outputs_t4/01_julia_t08.png" alt="Julia t08" />
+      <img src="outputs_t4/01_julia_t09.png" alt="Julia t09" />
+      <img src="outputs_t4/01_julia_t10.png" alt="Julia t10" />
+      <img src="outputs_t4/01_julia_t11.png" alt="Julia t11" />
+    </div>
+  </section>
+
+  <section>
+    <h2>T4 / CUDA · MPM88 粒子流体</h2>
+    <p class="note">官方 88 行 MLS-MPM：8192 粒子，128 网格。方块落下后在底部溅开。总耗时 1.79 s。</p>
+    <div class="grid">
+      <figure class="card">
+        <img src="outputs_t4/02_mpm88_0000.png" alt="MPM frame 0" />
+        <figcaption><strong>frame 0</strong><em>初始化：随机填满的青色方块</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs_t4/02_mpm88_0040.png" alt="MPM frame 40" />
+        <figcaption><strong>frame 40</strong><em>下落、接触底边界</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs_t4/02_mpm88_0120.png" alt="MPM frame 120" />
+        <figcaption><strong>frame 120</strong><em>铺开成流体，带飞溅</em></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>CPU · Mandelbrot / 波动 / N-body / Julia 扫描</h2>
+    <p class="note">会话 866d93，arch=x64。Mandelbrot 比 NumPy 快 6.42×。</p>
+    <div class="grid">
+      <figure class="card wide">
+        <img src="outputs/02_mandelbrot.png" alt="Mandelbrot seahorse valley" />
+        <figcaption><strong>Mandelbrot 1024×768</strong><em>seahorse valley · 132 ms vs NumPy 851 ms</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs/04_nbody.png" alt="N-body ring" />
+        <figcaption><strong>N-body 768 粒子</strong><em>180 步，1.42 ms/step，环状轨道</em></figcaption>
+      </figure>
+    </div>
+    <h2>二维波动方程</h2>
+    <div class="grid">
+      <figure class="card">
+        <img src="outputs/03_wave_step_000.png" alt="wave 0" />
+        <figcaption><strong>step 0</strong><em>两个高斯扰动</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs/03_wave_step_080.png" alt="wave 80" />
+        <figcaption><strong>step 80</strong><em>波环开始扩散</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs/03_wave_step_200.png" alt="wave 200" />
+        <figcaption><strong>step 200</strong><em>两环相交</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs/03_wave_step_419.png" alt="wave 419" />
+        <figcaption><strong>step 419</strong><em>衰减后的干涉场</em></figcaption>
+      </figure>
+    </div>
+    <h2>Julia 参数扫描（CPU）</h2>
+    <div class="grid">
+      <figure class="card">
+        <img src="outputs/05_julia_0.png" alt="julia c=-0.8+0.156i" />
+        <figcaption><strong>c = -0.8 + 0.156i</strong></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs/05_julia_1.png" alt="julia c=-0.4+0.6i" />
+        <figcaption><strong>c = -0.4 + 0.6i</strong></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs/05_julia_2.png" alt="julia c=0.285+0.01i" />
+        <figcaption><strong>c = 0.285 + 0.01i</strong></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs/05_julia_3.png" alt="julia c=-0.70176-0.3842i" />
+        <figcaption><strong>c = -0.70176 - 0.3842i</strong></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <dialog id="zoom"><img alt="zoomed result" /></dialog>
+  <footer>打开 experiments/gallery.html · 图片相对路径在 outputs/ 与 outputs_t4/</footer>
+  <script>
+    const dlg = document.getElementById("zoom");
+    const dlgImg = dlg.querySelector("img");
+    document.querySelectorAll("img").forEach((img) => {
+      if (img === dlgImg) return;
+      img.addEventListener("click", () => {
+        dlgImg.src = img.src;
+        dlg.showModal();
+      });
+    });
+    dlg.addEventListener("click", () => dlg.close());
+  </script>
+</body>
+</html>
