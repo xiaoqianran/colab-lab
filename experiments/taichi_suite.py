@@ -6,8 +6,6 @@ Run on the remote VM:
 Outputs land in /content/taichi_experiments/.
 """
 
-from __future__ import annotations
-
 import json
 import math
 import os
@@ -57,7 +55,7 @@ z = ti.field(dtype=ti.f32, shape=N_SAXPY)
 
 
 @ti.kernel
-def saxpy(a: ti.f32):
+def saxpy(a: float):
     for i in range(N_SAXPY):
         z[i] = a * x[i] + y[i]
 
@@ -111,7 +109,7 @@ def palette(t: ti.f32) -> ti.math.vec3:
 
 
 @ti.kernel
-def render_mandelbrot(cx: ti.f32, cy: ti.f32, scale: ti.f32):
+def render_mandelbrot(cx: float, cy: float, scale: float):
     for i, j in mandel:
         x0 = cx + (i / MAN_W - 0.5) * scale * (MAN_W / MAN_H)
         y0 = cy + (j / MAN_H - 0.5) * scale
@@ -204,7 +202,7 @@ def wave_reset():
 
 
 @ti.kernel
-def wave_step(c2: ti.f32, damping: ti.f32):
+def wave_step(c2: float, damping: float):
     for i, j in wave_u:
         if 0 < i < WAVE_N - 1 and 0 < j < WAVE_N - 1:
             lap = (
@@ -288,7 +286,7 @@ def nbody_init():
 
 
 @ti.kernel
-def nbody_step(dt: ti.f32, g: ti.f32, eps: ti.f32):
+def nbody_step(dt: float, g: float, eps: float):
     for i in range(N_BODY):
         a = ti.Vector([0.0, 0.0])
         for j in range(N_BODY):
@@ -363,7 +361,7 @@ julia_rgb = ti.Vector.field(3, dtype=ti.u8, shape=(JULIA_N, JULIA_N))
 
 
 @ti.kernel
-def render_julia(cx: ti.f32, cy: ti.f32):
+def render_julia(cx: float, cy: float):
     for i, j in julia_rgb:
         x = (i / JULIA_N - 0.5) * 3.0
         y = (j / JULIA_N - 0.5) * 3.0
