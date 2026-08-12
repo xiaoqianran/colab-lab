@@ -130,8 +130,35 @@
     <div class="stat"><b>6.42×</b><span>CPU Mandelbrot vs NumPy</span></div>
     <div class="stat"><b>0.076 ms</b><span>T4 Julia 稳态每帧</span></div>
     <div class="stat"><b>1.79 s</b><span>MPM88 280×50 substeps</span></div>
-    <div class="stat"><b>96 spp</b><span>T4 Cycles 路径追踪 960×540 · 3.1 s</span></div>
+    <div class="stat"><b>3.4×</b><span>96×96 丝绸 XPBD 相对实时</span></div>
   </div>
+
+  <section>
+    <h2>T4 · 丝绸（XPBD 布料罩在刚体球上）</h2>
+    <p class="note">9409 顶点，经纬拉伸 + 剪切 + 弯曲，Kajiya-Kay 各向异性高光。这是连续体布料，<strong>不是</strong>纱线级丝绸。没有自碰撞，所以不会出现真实丝绸那种层层叠褶，角会翘起来。</p>
+    <div class="grid">
+      <figure class="card">
+        <img src="outputs_silk/silk_000.png" alt="silk frame 0" />
+        <figcaption><strong>frame 0</strong><em>平铺在球上方</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs_silk/silk_070.png" alt="silk frame 70" />
+        <figcaption><strong>frame 70</strong><em>落下罩住球体，开始出褶</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs_silk/silk_219.png" alt="silk frame 219" />
+        <figcaption><strong>frame 219</strong><em>悬垂。缺自碰撞，边角张开</em></figcaption>
+      </figure>
+    </div>
+    <h2>和现实比，极限在哪</h2>
+    <p class="note">观感能像，定量不像。电影级丝绸是纱线/壳单元 + 自碰撞 + 各向异性摩擦，离线算几小时；这里 T4 上 3.4× 实时。</p>
+    <div class="grid">
+      <div class="stat"><b>布料 / 丝绸</b><span>XPBD 网格能做出垂感和高光。缺：纱线结构、自碰撞、弯曲各向异性的真实测量、空气耦合。一碰就穿、褶不够密，就是这个上限。</span></div>
+      <div class="stat"><b>MPM</b><span>雪、沙、面团、稠流体好看。不是工程 CFD：连续介质本构是玩具级，裂面、表面张力、可压缩性对不上实验室数据。</span></div>
+      <div class="stat"><b>流体</b><span>SPH/MPM 做溅射、黏液可以。做不到飞机机翼升力、管道压降那种网格收敛的 Navier–Stokes。</span></div>
+      <div class="stat"><b>刚体</b><span>解析球/盒碰撞很稳。堆一千个带摩擦的凸包、可破坏、连续碰撞检测，不是 Taichi 开箱能力。</span></div>
+    </div>
+  </section>
 
   <section>
     <h2>T4 / CUDA · 3D 工作室（Blender 风格）</h2>
