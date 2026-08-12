@@ -1,0 +1,55 @@
+{
+  "arch": "Arch.cuda",
+  "taichi": [
+    1,
+    7,
+    4
+  ],
+  "runs": {
+    "01_julia_hello_world": {
+      "resolution": "1024x512",
+      "frames": 12,
+      "render_s": 0.783,
+      "ms_per_frame_steady": 0.076,
+      "images": [
+        "/content/taichi_t4/01_julia_t00.png",
+        "/content/taichi_t4/01_julia_t01.png",
+        "/content/taichi_t4/01_julia_t02.png",
+        "/content/taichi_t4/01_julia_t03.png",
+        "/content/taichi_t4/01_julia_t04.png",
+        "/content/taichi_t4/01_julia_t05.png",
+        "/content/taichi_t4/01_julia_t06.png",
+        "/content/taichi_t4/01_julia_t07.png",
+        "/content/taichi_t4/01_julia_t08.png",
+        "/content/taichi_t4/01_julia_t09.png",
+        "/content/taichi_t4/01_julia_t10.png",
+        "/content/taichi_t4/01_julia_t11.png"
+      ],
+      "pattern": "@ti.func complex_sqr + @ti.kernel paint; outermost for is parallel"
+    },
+    "02_mpm88": {
+      "particles": 8192,
+      "grid": 128,
+      "display_frames": 280,
+      "substeps_per_frame": 50,
+      "elapsed_s": 1.791,
+      "ms_per_display_frame": 6.398,
+      "mean_y": 0.0857,
+      "images": [
+        "/content/taichi_t4/02_mpm88_0000.png",
+        "/content/taichi_t4/02_mpm88_0040.png",
+        "/content/taichi_t4/02_mpm88_0120.png"
+      ],
+      "pattern": "P2G / grid update / G2P; ti.static ndrange unrolls 3x3 stencil"
+    },
+    "03_atomic_reduction": {
+      "n": 4000000,
+      "taichi_sum": 1730.39453125,
+      "numpy_sum": 1730.3916015625,
+      "rel_err": 1.6930777387921167e-06,
+      "taichi_ms": 0.048,
+      "numpy_ms": 1.073,
+      "pattern": "ti.atomic_add inside parallel for; field[None] is a 0-D scalar"
+    }
+  }
+}
