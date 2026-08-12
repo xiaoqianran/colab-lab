@@ -116,7 +116,7 @@
 <body>
   <header>
     <h1>Taichi × Colab 试验结果</h1>
-    <p class="sub">CPU 套件在会话 <code>866d93</code> 上跑完；官方 Julia / MPM88 在 Tesla T4（CUDA）会话 <code>t4</code> 上跑完。Colab 无 GUI，全部用 <code>ti.tools.imwrite</code> 出图。</p>
+    <p class="sub">CPU 套件、T4 上的 Julia / MPM88，以及一套 Blender 风格的 3D 工作室渲染（SDF 视口 + 路径追踪）。Colab 无 GUI，全部 <code>ti.tools.imwrite</code> 出图。跑完即停 T4。</p>
     <div class="pills">
       <span class="pill">Taichi 1.7.4</span>
       <span class="pill">CPU x64</span>
@@ -129,8 +129,53 @@
     <div class="stat"><b>6.42×</b><span>CPU Mandelbrot vs NumPy</span></div>
     <div class="stat"><b>0.076 ms</b><span>T4 Julia 稳态每帧</span></div>
     <div class="stat"><b>1.79 s</b><span>MPM88 280×50 substeps</span></div>
-    <div class="stat"><b>22×</b><span>T4 atomic reduction vs NumPy</span></div>
+    <div class="stat"><b>96 spp</b><span>T4 Cycles 路径追踪 960×540 · 3.1 s</span></div>
   </div>
+
+  <section>
+    <h2>T4 / CUDA · 3D 工作室（Blender 风格）</h2>
+    <p class="note">不是 Blender 本身。用 Taichi 复刻默认立方体场景：棋盘地面、橙色立方体、金属球、玻璃球、圆环、面光。视口是 SDF 光线步进 + 三点光；Cycles 是单向路径追踪（Lambert / 金属 / 玻璃 / 发光）。</p>
+    <div class="grid">
+      <figure class="card wide">
+        <img src="outputs_3d/01_viewport.png" alt="EEVEE-like viewport" />
+        <figcaption><strong>Viewport（EEVEE 感）</strong><em>SDF ray march · 软阴影 · AO · 2.9 s 含编译</em></figcaption>
+      </figure>
+      <figure class="card wide">
+        <img src="outputs_3d/03_cycles_spp096.png" alt="Cycles-like path tracing 96 spp" />
+        <figcaption><strong>Cycles（路径追踪 96 spp）</strong><em>960×540 · 3.1 s · 反射/折射/间接光</em></figcaption>
+      </figure>
+    </div>
+    <h2>路径追踪收敛</h2>
+    <div class="grid">
+      <figure class="card">
+        <img src="outputs_3d/03_cycles_spp008.png" alt="8 spp" />
+        <figcaption><strong>8 spp</strong><em>噪声很大</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs_3d/03_cycles_spp032.png" alt="32 spp" />
+        <figcaption><strong>32 spp</strong><em>开始收敛</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs_3d/03_cycles_spp096.png" alt="96 spp" />
+        <figcaption><strong>96 spp</strong><em>最终 beauty</em></figcaption>
+      </figure>
+    </div>
+    <h2>视口转盘 12 帧</h2>
+    <div class="film">
+      <img src="outputs_3d/02_turn_00.png" alt="turn 00" />
+      <img src="outputs_3d/02_turn_01.png" alt="turn 01" />
+      <img src="outputs_3d/02_turn_02.png" alt="turn 02" />
+      <img src="outputs_3d/02_turn_03.png" alt="turn 03" />
+      <img src="outputs_3d/02_turn_04.png" alt="turn 04" />
+      <img src="outputs_3d/02_turn_05.png" alt="turn 05" />
+      <img src="outputs_3d/02_turn_06.png" alt="turn 06" />
+      <img src="outputs_3d/02_turn_07.png" alt="turn 07" />
+      <img src="outputs_3d/02_turn_08.png" alt="turn 08" />
+      <img src="outputs_3d/02_turn_09.png" alt="turn 09" />
+      <img src="outputs_3d/02_turn_10.png" alt="turn 10" />
+      <img src="outputs_3d/02_turn_11.png" alt="turn 11" />
+    </div>
+  </section>
 
   <section>
     <h2>T4 / CUDA · 官方 Hello World Julia</h2>
