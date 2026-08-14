@@ -24,8 +24,8 @@ print("arch", ti.cfg.arch)
 
 W, H = 640, 360
 N_GAUSS = 6144
-N_RAYS = 4096
-STEPS = 80
+N_RAYS = 8192
+STEPS = 120
 IN_DIM = 21  # 3 + 2*3*3 freqs
 HID = 32
 
@@ -48,6 +48,7 @@ g_pos = ti.Vector.field(3, dtype=ti.f32, shape=N_GAUSS)
 g_col = ti.Vector.field(3, dtype=ti.f32, shape=N_GAUSS)
 g_scale = ti.field(dtype=ti.f32, shape=N_GAUSS)
 g_op = ti.field(dtype=ti.f32, shape=N_GAUSS)
+loss_acc = ti.field(dtype=ti.f32, shape=())
 
 
 @ti.func
@@ -217,18 +218,48 @@ def sgd_step(lr: float):
 
 
 @ti.kernel
-def train_batch(yaw: float):
+def train_batch():
+    # Mix of surface shells (thick occupancy) and empty space — volume render
+    # only shows geometry if sigma is high in a band around the SDF zero set.
     for _ in range(N_RAYS):
-        u = ti.random()
-        v = ti.random()
-        ro, rd = camera(u, v, yaw)
-        hit, p, mid = march_gt(ro, rd)
+        k = ti.random()
+        q = tm.vec3(0.0)
+        if k < 0.28:
+            a = ti.random() * 6.2831853
+            b = ti.acos(2.0 * ti.random() - 1.0)
+            rad = 0.32 + (ti.random() * 2.0 - 1.0) * 0.045
+            q = tm.vec3(-0.25, 0.05, 0.1) + rad * tm.vec3(
+                ti.sin(b) * ti.cos(a), ti.cos(b), ti.sin(b) * ti.sin(a)
+            )
+        elif k < 0.52:
+            c = tm.vec3(0.32, 0.05, -0.05)
+            hb = tm.vec3(0.22, 0.22, 0.22)
+            lx = (ti.random() * 2.0 - 1.0) * hb.x
+            ly = (ti.random() * 2.0 - 1.0) * hb.y
+            lz = (ti.random() * 2.0 - 1.0) * hb.z
+            ax, ay, az = ti.abs(lx) / hb.x, ti.abs(ly) / hb.y, ti.abs(lz) / hb.z
+            if ax >= ay and ax >= az:
+                lx = hb.x if lx >= 0.0 else -hb.x
+            elif ay >= az:
+                ly = hb.y if ly >= 0.0 else -hb.y
+            else:
+                lz = hb.z if lz >= 0.0 else -hb.z
+            q = c + tm.vec3(lx, ly, lz) + (ti.random() * 2.0 - 1.0) * 0.04 * tm.vec3(
+                1.0 if ax >= ay and ax >= az else 0.0,
+                1.0 if ay >= ax and ay >= az else 0.0,
+                1.0 if az >= ax and az >= ay else 0.0,
+            )
+        elif k < 0.72:
+            q = tm.vec3((ti.random() * 2.0 - 1.0) * 1.15, -0.5 + (ti.random() * 2.0 - 1.0) * 0.04, (ti.random() * 2.0 - 1.0) * 1.15)
+        else:
+            q = tm.vec3((ti.random() * 2.0 - 1.0) * 1.3, ti.random() * 1.5 - 0.55, (ti.random() * 2.0 - 1.0) * 1.3)
+        d, mid = scene_gt(q)
+        n = gt_normal(q)
         target = tm.vec3(0.45, 0.55, 0.70)
-        q = ro + rd * 1.6
-        if hit == 1:
-            n = gt_normal(p)
-            target = gt_color(p, n, mid)
-            q = p
+        target_sig = 0.0
+        if d < 0.06:
+            target = gt_color(q, n, mid)
+            target_sig = 14.0 * ti.exp(-d * d * 280.0)
         rgb, sig = mlp_forward(q)
         feat = encode(q)
         hid = ti.Vector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
@@ -244,12 +275,14 @@ def train_batch(yaw: float):
                 s += w2[i, j] * hid[j]
             out[i] = s
         diff = rgb - target
-        srgb = rgb
+        dsig = sig - target_sig
+        ti.atomic_add(loss_acc[None], diff.dot(diff) + 0.04 * dsig * dsig)
+        softplus_j = 1.0 / (1.0 + ti.exp(-out.w))
         d_out = tm.vec4(
-            2.0 * diff.x * srgb.x * (1.0 - srgb.x),
-            2.0 * diff.y * srgb.y * (1.0 - srgb.y),
-            2.0 * diff.z * srgb.z * (1.0 - srgb.z),
-            0.05 * ((sig if hit == 1 else 0.0) - (2.5 if hit == 1 else 0.0)),
+            2.0 * diff.x * rgb.x * (1.0 - rgb.x),
+            2.0 * diff.y * rgb.y * (1.0 - rgb.y),
+            2.0 * diff.z * rgb.z * (1.0 - rgb.z),
+            0.08 * dsig * softplus_j,
         )
         dh = ti.Vector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
         for i in ti.static(range(4)):
@@ -260,8 +293,8 @@ def train_batch(yaw: float):
         for j in ti.static(range(HID)):
             if hid[j] > 0:
                 ti.atomic_add(gb1[j], dh[j])
-                for k in ti.static(range(IN_DIM)):
-                    ti.atomic_add(gw1[j, k], dh[j] * feat[k])
+                for kk in ti.static(range(IN_DIM)):
+                    ti.atomic_add(gw1[j, kk], dh[j] * feat[kk])
 
 
 @ti.kernel
@@ -272,13 +305,15 @@ def render_nerf(yaw: float):
         ro, rd = camera(u, v, yaw)
         col = tm.vec3(0.0)
         T = 1.0
-        for s in range(32):
-            t = 0.35 + s * 0.10
+        t = 0.25
+        for _ in range(56):
             q = ro + rd * t
             rgb, sig = mlp_forward(q)
-            alpha = 1.0 - ti.exp(-sig * 0.10)
+            dt = 0.055
+            alpha = 1.0 - ti.exp(-sig * dt)
             col += T * alpha * rgb
             T *= 1.0 - alpha
+            t += dt
         col += T * tm.vec3(0.45, 0.55, 0.70)
         pixels[i, j] = col
 
@@ -422,13 +457,14 @@ def main():
     losses = []
     print("training neural field")
     for s in range(STEPS):
-        yaw = yaw0 + 0.35 * math.sin(s * 0.11)
+        loss_acc[None] = 0.0
         zero_grad()
-        train_batch(yaw)
-        sgd_step(0.08 if s < 40 else 0.03)
+        train_batch()
+        sgd_step(0.12 if s < 50 else 0.04)
         if s % 20 == 0:
-            print("step", s, flush=True)
-            losses.append(s)
+            mse = float(loss_acc[None]) / N_RAYS
+            print("step", s, "mse", round(mse, 5), flush=True)
+            losses.append({"step": s, "mse": round(mse, 5)})
     results["nerf_train_s"] = round(time.perf_counter() - t0, 3)
     results["losses"] = losses
     render_nerf(yaw0)

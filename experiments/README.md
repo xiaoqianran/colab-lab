@@ -42,10 +42,10 @@ colab --auth=adc exec -s t4-lab -f experiments/taichi_pt_denoise.py --timeout 90
 colab --auth=adc stop -s t4-lab
 ```
 
-| Script | What |
-| --- | --- |
-| `taichi_mpm3d.py` | 3D MLS-MPM snow / sand / dough |
-| `taichi_cloth_selfcol.py` | XPBD cloth + spatial-hash self-collision |
-| `taichi_fluids.py` | WCSPH dam break + shallow-water rain |
-| `taichi_neural_gsplat.py` | Tiny PE-MLP neural field + ~6k Gaussian splats |
-| `taichi_pt_denoise.py` | Path tracing 8 spp vs A-trous / temporal / SVGF-lite vs 48 spp |
+| Script | What | T4 result |
+| --- | --- | --- |
+| `taichi_mpm3d.py` | 3D MLS-MPM snow / sand / dough | 5184 particles, 48³, 180 frames, **19.25 s**, 0.052 ms/substep |
+| `taichi_cloth_selfcol.py` | XPBD cloth + spatial-hash self-collision | 56×56, 3249 verts, 200 frames, **8.69 s**, 2.56× realtime |
+| `taichi_fluids.py` | WCSPH dam break + shallow-water rain | SPH 6400 **2.69 s**; shallow 192² **0.31 s** |
+| `taichi_neural_gsplat.py` | Tiny PE-MLP neural field + ~6k Gaussian splats | 6144 Gaussians, splat turntable **0.51 s** (MLP train ~2 min) |
+| `taichi_pt_denoise.py` | Path tracing 8 spp vs A-trous / temporal / SVGF-lite vs 48 spp | 640×360; 8 spp **1.62 s**; A-trous **4.33 s**; temporal **0.20 s** |

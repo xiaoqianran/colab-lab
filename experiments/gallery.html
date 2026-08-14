@@ -127,10 +127,10 @@
   </header>
 
   <div class="stats">
-    <div class="stat"><b>6.42×</b><span>CPU Mandelbrot vs NumPy</span></div>
-    <div class="stat"><b>0.076 ms</b><span>T4 Julia 稳态每帧</span></div>
-    <div class="stat"><b>1.79 s</b><span>MPM88 280×50 substeps</span></div>
-    <div class="stat"><b>3.4×</b><span>96×96 丝绸 XPBD 相对实时</span></div>
+    <div class="stat"><b>19.3 s</b><span>3D MPM 雪/沙/面团 180 帧</span></div>
+    <div class="stat"><b>2.56×</b><span>自碰撞布料相对实时</span></div>
+    <div class="stat"><b>2.69 s</b><span>SPH 6400 溃坝</span></div>
+    <div class="stat"><b>1.62 s</b><span>路径追踪 8 spp 640×360</span></div>
   </div>
 
   <section>
@@ -162,7 +162,7 @@
 
   <section>
     <h2>T4 · 3D MPM（雪 / 沙 / 面团）</h2>
-    <p class="note">48³ 网格，约 1.5 万粒子，三种本构同时下落：硬化雪、Drucker-Prager 风沙、黏软面团。比 2D mpm88 多了变形梯度 <code>F</code> 和塑性。仍是演示级连续介质，不是工程本构。</p>
+    <p class="note">48³ 网格，5184 粒子，三种本构同时下落：硬化雪、Drucker-Prager 风沙、黏软面团。比 2D mpm88 多了变形梯度 <code>F</code> 和塑性。T4 上 180 帧 <strong>19.25 s</strong>（0.052 ms/substep）。仍是演示级连续介质，不是工程本构。</p>
     <div class="grid">
       <figure class="card"><img src="outputs_mpm3d/mpm3d_000.png" alt="mpm3d 0" /><figcaption><strong>frame 0</strong><em>三块物料悬在盒中</em></figcaption></figure>
       <figure class="card"><img src="outputs_mpm3d/mpm3d_070.png" alt="mpm3d 70" /><figcaption><strong>frame 70</strong><em>落地、开始铺开</em></figcaption></figure>
@@ -172,7 +172,7 @@
 
   <section>
     <h2>T4 · 自碰撞布料</h2>
-    <p class="note">56×56 XPBD + 空间哈希粒子自碰撞。没有自碰撞时布会穿自己、角会翘；有了之后褶才能叠起来。还不是纱线级丝绸。</p>
+    <p class="note">56×56 XPBD + 空间哈希粒子自碰撞（3249 顶点）。没有自碰撞时布会穿自己、角会翘；有了之后褶才能叠起来。T4 上 200 帧 <strong>8.69 s</strong>（2.56× 实时）。还不是纱线级丝绸。</p>
     <div class="grid">
       <figure class="card"><img src="outputs_cloth_sc/cloth_000.png" alt="cloth 0" /><figcaption><strong>frame 0</strong><em>平铺</em></figcaption></figure>
       <figure class="card"><img src="outputs_cloth_sc/cloth_080.png" alt="cloth 80" /><figcaption><strong>frame 80</strong><em>罩住球体</em></figcaption></figure>
@@ -182,7 +182,7 @@
 
   <section>
     <h2>T4 · SPH 溃坝 + 浅水方程</h2>
-    <p class="note">弱可压缩 SPH 溅射，以及 192² 浅水高度场（雨滴高斯源）。能做水花和涟漪，做不到机翼升力。</p>
+    <p class="note">弱可压缩 SPH 溅射（6400 粒子，<strong>2.69 s</strong>），以及 192² 浅水高度场（雨滴高斯源，<strong>0.31 s</strong>）。能做水花和涟漪，做不到机翼升力。</p>
     <div class="grid">
       <figure class="card"><img src="outputs_fluids/sph_000.png" alt="sph 0" /><figcaption><strong>SPH 0</strong><em>水柱</em></figcaption></figure>
       <figure class="card"><img src="outputs_fluids/sph_090.png" alt="sph 90" /><figcaption><strong>SPH 90</strong><em>溃坝溅开</em></figcaption></figure>
@@ -193,11 +193,11 @@
 
   <section>
     <h2>T4 · 神经场 + Gaussian Splatting</h2>
-    <p class="note">对解析 SDF 场景：先拟合一个带位置编码的小 MLP（体积渲染），再把同一场景表示成 ~6k 个高斯点做加权融合转盘。这是玩具级 NeRF / 3DGS，不是 Instant-NGP 或完整 3DGS 训练。</p>
+    <p class="note">对解析 SDF 场景：先拟合一个带位置编码的小 MLP（表面带采样 + 体积渲染），再把同一场景表示成 6144 个高斯点做加权融合转盘（<strong>0.51 s</strong>）。这是玩具级 NeRF / 3DGS，不是 Instant-NGP 或完整 3DGS 训练。</p>
     <div class="grid">
       <figure class="card"><img src="outputs_neural/01_gt.png" alt="gt" /><figcaption><strong>GT</strong><em>解析 SDF 着色</em></figcaption></figure>
       <figure class="card"><img src="outputs_neural/02_nerf_init.png" alt="nerf init" /><figcaption><strong>NeRF 初始</strong><em>随机 MLP</em></figcaption></figure>
-      <figure class="card"><img src="outputs_neural/03_nerf_fit.png" alt="nerf fit" /><figcaption><strong>NeRF 拟合后</strong><em>180 step SGD</em></figcaption></figure>
+      <figure class="card"><img src="outputs_neural/03_nerf_fit.png" alt="nerf fit" /><figcaption><strong>NeRF 拟合后</strong><em>120 step SGD · 表面带密度</em></figcaption></figure>
     </div>
     <h2>Gaussian splat 转盘</h2>
     <div class="film">
@@ -214,7 +214,7 @@
 
   <section>
     <h2>T4 · 路径追踪 + 时空去噪</h2>
-    <p class="note">8 spp 噪声 vs A-trous（G-buffer 边感知）vs 8 帧时间累积 vs SVGF-lite vs 48 spp 暴力参考。去噪比盲目加 spp 更值：同样时间噪点下去、边缘靠法线/深度守住。</p>
+    <p class="note">640×360。8 spp 噪声（<strong>1.62 s</strong>）vs A-trous（G-buffer 边感知，<strong>4.33 s</strong>）vs 8 帧时间累积（<strong>0.20 s</strong>）vs SVGF-lite vs 48 spp 暴力参考。去噪比盲目加 spp 更值：同样时间噪点下去、边缘靠法线/深度守住。</p>
     <div class="grid">
       <figure class="card"><img src="outputs_denoise/01_noisy_8spp.png" alt="noisy" /><figcaption><strong>8 spp</strong><em>原始噪声</em></figcaption></figure>
       <figure class="card"><img src="outputs_denoise/02_spatial_8spp.png" alt="spatial" /><figcaption><strong>A-trous</strong><em>空间去噪</em></figcaption></figure>
