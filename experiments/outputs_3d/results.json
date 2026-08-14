@@ -1,0 +1,39 @@
+{
+  "arch": "Arch.cuda",
+  "resolution": "960x540",
+  "images": {
+    "viewport": "/content/taichi_3d/01_viewport.png",
+    "turntable": [
+      "/content/taichi_3d/02_turn_00.png",
+      "/content/taichi_3d/02_turn_01.png",
+      "/content/taichi_3d/02_turn_02.png",
+      "/content/taichi_3d/02_turn_03.png",
+      "/content/taichi_3d/02_turn_04.png",
+      "/content/taichi_3d/02_turn_05.png",
+      "/content/taichi_3d/02_turn_06.png",
+      "/content/taichi_3d/02_turn_07.png",
+      "/content/taichi_3d/02_turn_08.png",
+      "/content/taichi_3d/02_turn_09.png",
+      "/content/taichi_3d/02_turn_10.png",
+      "/content/taichi_3d/02_turn_11.png"
+    ],
+    "cycles": [
+      {
+        "spp": 8,
+        "path": "/content/taichi_3d/03_cycles_spp008.png"
+      },
+      {
+        "spp": 32,
+        "path": "/content/taichi_3d/03_cycles_spp032.png"
+      },
+      {
+        "spp": 96,
+        "path": "/content/taichi_3d/03_cycles_spp096.png"
+      }
+    ]
+  },
+  "viewport_s": 2.855,
+  "turntable_s": 0.581,
+  "cycles_s": 3.141,
+  "spp": 96
+}

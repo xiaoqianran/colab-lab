@@ -1,0 +1,91 @@
+{
+  "taichi": [
+    1,
+    7,
+    4
+  ],
+  "arch": "cpu/x64",
+  "experiments": {
+    "01_saxpy_correctness_and_throughput": {
+      "n": 4000000,
+      "max_abs_error": 0.0,
+      "pass": true,
+      "taichi_ms": 5.495,
+      "numpy_ms": 13.941,
+      "speedup_vs_numpy": 2.537,
+      "taichi_gflops": 1.456
+    },
+    "02_mandelbrot": {
+      "resolution": "1024x768",
+      "max_iters": 120,
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "taichi_ms": 132.39,
+      "numpy_ms": 850.55,
+      "speedup_vs_numpy": 6.42,
+      "image": "/content/taichi_experiments/02_mandelbrot.png"
+    },
+    "03_wave_equation": {
+      "grid": "384x384",
+      "steps": 420,
+      "elapsed_s": 0.907,
+      "ms_per_step": 2.159,
+      "mean_abs_height": 0.00225,
+      "frames": [
+        "/content/taichi_experiments/03_wave_step_000.png",
+        "/content/taichi_experiments/03_wave_step_080.png",
+        "/content/taichi_experiments/03_wave_step_200.png",
+        "/content/taichi_experiments/03_wave_step_419.png"
+      ]
+    },
+    "04_nbody_gravity": {
+      "particles": 768,
+      "steps": 180,
+      "elapsed_s": 0.255,
+      "ms_per_step": 1.419,
+      "mean_speed": 0.63855,
+      "bbox": [
+        0.1367093175649643,
+        0.8588886857032776
+      ],
+      "image": "/content/taichi_experiments/04_nbody.png"
+    },
+    "05_julia_parameter_sweep": {
+      "resolution": "512x512",
+      "variants": 4,
+      "elapsed_s": 0.363,
+      "frames": [
+        {
+          "c": [
+            -0.8,
+            0.156
+          ],
+          "image": "/content/taichi_experiments/05_julia_0.png"
+        },
+        {
+          "c": [
+            -0.4,
+            0.6
+          ],
+          "image": "/content/taichi_experiments/05_julia_1.png"
+        },
+        {
+          "c": [
+            0.285,
+            0.01
+          ],
+          "image": "/content/taichi_experiments/05_julia_2.png"
+        },
+        {
+          "c": [
+            -0.70176,
+            -0.3842
+          ],
+          "image": "/content/taichi_experiments/05_julia_3.png"
+        }
+      ]
+    }
+  }
+}

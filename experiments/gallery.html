@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="https://raw.githubusercontent.com/xiaoqianran/colab-lab/cursor/taichi-colab-experiments-5301/experiments/" />
+  <title>Taichi × Colab 试验结果</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #141a2e;
+      --ink: #e8eefc;
+      --muted: #93a0c2;
+      --line: #2a3558;
+      --accent: #5eead4;
+      --accent-2: #fb7185;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #1b2a55 0%, transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, #3b1d3a 0%, transparent 50%),
+        var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+    header {
+      padding: 48px 24px 16px;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 2rem; margin: 0 0 8px; letter-spacing: -0.03em; }
+    .sub { color: var(--muted); max-width: 720px; }
+    .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .pill {
+      border: 1px solid var(--line);
+      background: rgba(20, 26, 46, 0.7);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 12px;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      max-width: 1120px;
+      margin: 24px auto;
+      padding: 0 24px;
+    }
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+    .stat b { display: block; font-size: 1.25rem; color: var(--accent); }
+    .stat span { color: var(--muted); font-size: 12px; }
+    section {
+      max-width: 1120px;
+      margin: 0 auto 48px;
+      padding: 0 24px;
+    }
+    h2 {
+      font-size: 1.25rem;
+      margin: 32px 0 8px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 8px;
+    }
+    p.note { color: var(--muted); margin-top: 0; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .card img {
+      display: block;
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      background: #080c18;
+      cursor: zoom-in;
+    }
+    .card.wide img { height: 280px; object-fit: contain; }
+    figcaption {
+      padding: 10px 12px 14px;
+      font-size: 13px;
+    }
+    figcaption strong { display: block; }
+    figcaption em { color: var(--muted); font-style: normal; }
+    .film {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    @media (max-width: 800px) { .film { grid-template-columns: repeat(2, 1fr); } }
+    .film img { height: 110px; object-fit: cover; width: 100%; cursor: zoom-in; border-radius: 8px; border: 1px solid var(--line); }
+    dialog {
+      border: 0;
+      padding: 0;
+      background: transparent;
+      max-width: min(96vw, 1100px);
+    }
+    dialog::backdrop { background: rgba(4, 8, 18, 0.82); }
+    dialog img { width: 100%; height: auto; border-radius: 12px; display: block; }
+    footer { color: var(--muted); text-align: center; padding: 24px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Taichi × Colab 试验结果</h1>
+    <p class="sub">CPU 套件、T4 上的 Julia / MPM88，以及一套 Blender 风格的 3D 工作室渲染（SDF 视口 + 路径追踪）。Colab 无 GUI，全部 <code>ti.tools.imwrite</code> 出图。跑完即停 T4。</p>
+    <div class="pills">
+      <span class="pill">Taichi 1.7.4</span>
+      <span class="pill">CPU x64</span>
+      <span class="pill">CUDA T4 15GB</span>
+      <span class="pill">google-colab-cli</span>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><b>6.42×</b><span>CPU Mandelbrot vs NumPy</span></div>
+    <div class="stat"><b>0.076 ms</b><span>T4 Julia 稳态每帧</span></div>
+    <div class="stat"><b>1.79 s</b><span>MPM88 280×50 substeps</span></div>
+    <div class="stat"><b>3.4×</b><span>96×96 丝绸 XPBD 相对实时</span></div>
+  </div>
+
+  <section>
+    <h2>T4 · 丝绸（XPBD 布料罩在刚体球上）</h2>
+    <p class="note">9409 顶点，经纬拉伸 + 剪切 + 弯曲，Kajiya-Kay 各向异性高光。这是连续体布料，<strong>不是</strong>纱线级丝绸。没有自碰撞，所以不会出现真实丝绸那种层层叠褶，角会翘起来。</p>
+    <div class="grid">
+      <figure class="card">
+        <img src="outputs_silk/silk_000.png" alt="silk frame 0" />
+        <figcaption><strong>frame 0</strong><em>平铺在球上方</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs_silk/silk_070.png" alt="silk frame 70" />
+        <figcaption><strong>frame 70</strong><em>落下罩住球体，开始出褶</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs_silk/silk_219.png" alt="silk frame 219" />
+        <figcaption><strong>frame 219</strong><em>悬垂。缺自碰撞，边角张开</em></figcaption>
+      </figure>
+    </div>
+    <h2>和现实比，极限在哪</h2>
+    <p class="note">观感能像，定量不像。电影级丝绸是纱线/壳单元 + 自碰撞 + 各向异性摩擦，离线算几小时；这里 T4 上 3.4× 实时。</p>
+    <div class="grid">
+      <div class="stat"><b>布料 / 丝绸</b><span>XPBD 网格能做出垂感和高光。缺：纱线结构、自碰撞、弯曲各向异性的真实测量、空气耦合。一碰就穿、褶不够密，就是这个上限。</span></div>
+      <div class="stat"><b>MPM</b><span>雪、沙、面团、稠流体好看。不是工程 CFD：连续介质本构是玩具级，裂面、表面张力、可压缩性对不上实验室数据。</span></div>
+      <div class="stat"><b>流体</b><span>SPH/MPM 做溅射、黏液可以。做不到飞机机翼升力、管道压降那种网格收敛的 Navier–Stokes。</span></div>
+      <div class="stat"><b>刚体</b><span>解析球/盒碰撞很稳。堆一千个带摩擦的凸包、可破坏、连续碰撞检测，不是 Taichi 开箱能力。</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>T4 / CUDA · 3D 工作室（Blender 风格）</h2>
+    <p class="note">不是 Blender 本身。用 Taichi 复刻默认立方体场景：棋盘地面、橙色立方体、金属球、玻璃球、圆环、面光。视口是 SDF 光线步进 + 三点光；Cycles 是单向路径追踪（Lambert / 金属 / 玻璃 / 发光）。</p>
+    <div class="grid">
+      <figure class="card wide">
+        <img src="outputs_3d/01_viewport.png" alt="EEVEE-like viewport" />
+        <figcaption><strong>Viewport（EEVEE 感）</strong><em>SDF ray march · 软阴影 · AO · 2.9 s 含编译</em></figcaption>
+      </figure>
+      <figure class="card wide">
+        <img src="outputs_3d/03_cycles_spp096.png" alt="Cycles-like path tracing 96 spp" />
+        <figcaption><strong>Cycles（路径追踪 96 spp）</strong><em>960×540 · 3.1 s · 反射/折射/间接光</em></figcaption>
+      </figure>
+    </div>
+    <h2>路径追踪收敛</h2>
+    <div class="grid">
+      <figure class="card">
+        <img src="outputs_3d/03_cycles_spp008.png" alt="8 spp" />
+        <figcaption><strong>8 spp</strong><em>噪声很大</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs_3d/03_cycles_spp032.png" alt="32 spp" />
+        <figcaption><strong>32 spp</strong><em>开始收敛</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs_3d/03_cycles_spp096.png" alt="96 spp" />
+        <figcaption><strong>96 spp</strong><em>最终 beauty</em></figcaption>
+      </figure>
+    </div>
+    <h2>视口转盘 12 帧</h2>
+    <div class="film">
+      <img src="outputs_3d/02_turn_00.png" alt="turn 00" />
+      <img src="outputs_3d/02_turn_01.png" alt="turn 01" />
+      <img src="outputs_3d/02_turn_02.png" alt="turn 02" />
+      <img src="outputs_3d/02_turn_03.png" alt="turn 03" />
+      <img src="outputs_3d/02_turn_04.png" alt="turn 04" />
+      <img src="outputs_3d/02_turn_05.png" alt="turn 05" />
+      <img src="outputs_3d/02_turn_06.png" alt="turn 06" />
+      <img src="outputs_3d/02_turn_07.png" alt="turn 07" />
+      <img src="outputs_3d/02_turn_08.png" alt="turn 08" />
+      <img src="outputs_3d/02_turn_09.png" alt="turn 09" />
+      <img src="outputs_3d/02_turn_10.png" alt="turn 10" />
+      <img src="outputs_3d/02_turn_11.png" alt="turn 11" />
+    </div>
+  </section>
+
+  <section>
+    <h2>T4 / CUDA · 官方 Hello World Julia</h2>
+    <p class="note"><code>@ti.func complex_sqr</code> + 并行 <code>paint</code>。1024×512，12 帧，<code>c = (-0.8, 0.2 cos t)</code>。稳态 0.076 ms/帧。</p>
+    <div class="film" id="julia-film">
+      <img src="outputs_t4/01_julia_t00.png" alt="Julia t00" />
+      <img src="outputs_t4/01_julia_t01.png" alt="Julia t01" />
+      <img src="outputs_t4/01_julia_t02.png" alt="Julia t02" />
+      <img src="outputs_t4/01_julia_t03.png" alt="Julia t03" />
+      <img src="outputs_t4/01_julia_t04.png" alt="Julia t04" />
+      <img src="outputs_t4/01_julia_t05.png" alt="Julia t05" />
+      <img src="outputs_t4/01_julia_t06.png" alt="Julia t06" />
+      <img src="outputs_t4/01_julia_t07.png" alt="Julia t07" />
+      <img src="outputs_t4/01_julia_t08.png" alt="Julia t08" />
+      <img src="outputs_t4/01_julia_t09.png" alt="Julia t09" />
+      <img src="outputs_t4/01_julia_t10.png" alt="Julia t10" />
+      <img src="outputs_t4/01_julia_t11.png" alt="Julia t11" />
+    </div>
+  </section>
+
+  <section>
+    <h2>T4 / CUDA · MPM88 粒子流体</h2>
+    <p class="note">官方 88 行 MLS-MPM：8192 粒子，128 网格。方块落下后在底部溅开。总耗时 1.79 s。</p>
+    <div class="grid">
+      <figure class="card">
+        <img src="outputs_t4/02_mpm88_0000.png" alt="MPM frame 0" />
+        <figcaption><strong>frame 0</strong><em>初始化：随机填满的青色方块</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs_t4/02_mpm88_0040.png" alt="MPM frame 40" />
+        <figcaption><strong>frame 40</strong><em>下落、接触底边界</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs_t4/02_mpm88_0120.png" alt="MPM frame 120" />
+        <figcaption><strong>frame 120</strong><em>铺开成流体，带飞溅</em></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>CPU · Mandelbrot / 波动 / N-body / Julia 扫描</h2>
+    <p class="note">会话 866d93，arch=x64。Mandelbrot 比 NumPy 快 6.42×。</p>
+    <div class="grid">
+      <figure class="card wide">
+        <img src="outputs/02_mandelbrot.png" alt="Mandelbrot seahorse valley" />
+        <figcaption><strong>Mandelbrot 1024×768</strong><em>seahorse valley · 132 ms vs NumPy 851 ms</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs/04_nbody.png" alt="N-body ring" />
+        <figcaption><strong>N-body 768 粒子</strong><em>180 步，1.42 ms/step，环状轨道</em></figcaption>
+      </figure>
+    </div>
+    <h2>二维波动方程</h2>
+    <div class="grid">
+      <figure class="card">
+        <img src="outputs/03_wave_step_000.png" alt="wave 0" />
+        <figcaption><strong>step 0</strong><em>两个高斯扰动</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs/03_wave_step_080.png" alt="wave 80" />
+        <figcaption><strong>step 80</strong><em>波环开始扩散</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs/03_wave_step_200.png" alt="wave 200" />
+        <figcaption><strong>step 200</strong><em>两环相交</em></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs/03_wave_step_419.png" alt="wave 419" />
+        <figcaption><strong>step 419</strong><em>衰减后的干涉场</em></figcaption>
+      </figure>
+    </div>
+    <h2>Julia 参数扫描（CPU）</h2>
+    <div class="grid">
+      <figure class="card">
+        <img src="outputs/05_julia_0.png" alt="julia c=-0.8+0.156i" />
+        <figcaption><strong>c = -0.8 + 0.156i</strong></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs/05_julia_1.png" alt="julia c=-0.4+0.6i" />
+        <figcaption><strong>c = -0.4 + 0.6i</strong></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs/05_julia_2.png" alt="julia c=0.285+0.01i" />
+        <figcaption><strong>c = 0.285 + 0.01i</strong></figcaption>
+      </figure>
+      <figure class="card">
+        <img src="outputs/05_julia_3.png" alt="julia c=-0.70176-0.3842i" />
+        <figcaption><strong>c = -0.70176 - 0.3842i</strong></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <dialog id="zoom"><img alt="zoomed result" /></dialog>
+  <footer>打开 experiments/gallery.html · 图片相对路径在 outputs/ 与 outputs_t4/</footer>
+  <script>
+    const dlg = document.getElementById("zoom");
+    const dlgImg = dlg.querySelector("img");
+    document.querySelectorAll("img").forEach((img) => {
+      if (img === dlgImg) return;
+      img.addEventListener("click", () => {
+        dlgImg.src = img.src;
+        dlg.showModal();
+      });
+    });
+    dlg.addEventListener("click", () => dlg.close());
+  </script>
+</body>
+</html>

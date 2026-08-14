@@ -1,0 +1,40 @@
+{
+  "arch": "Arch.cuda",
+  "grid": "96x96",
+  "vertices": 9409,
+  "frames": 220,
+  "elapsed_s": 3.688,
+  "ms_per_frame": 16.76,
+  "realtime_ratio": 3.4,
+  "images": [
+    {
+      "frame": 0,
+      "path": "/content/taichi_silk/silk_000.png"
+    },
+    {
+      "frame": 25,
+      "path": "/content/taichi_silk/silk_025.png"
+    },
+    {
+      "frame": 45,
+      "path": "/content/taichi_silk/silk_045.png"
+    },
+    {
+      "frame": 70,
+      "path": "/content/taichi_silk/silk_070.png"
+    },
+    {
+      "frame": 110,
+      "path": "/content/taichi_silk/silk_110.png"
+    },
+    {
+      "frame": 160,
+      "path": "/content/taichi_silk/silk_160.png"
+    },
+    {
+      "frame": 219,
+      "path": "/content/taichi_silk/silk_219.png"
+    }
+  ],
+  "model": "XPBD continuum cloth, not yarn-level silk"
+}
