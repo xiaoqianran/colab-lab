@@ -259,7 +259,7 @@ def train_batch():
         target_sig = 0.0
         if d < 0.06:
             target = gt_color(q, n, mid)
-            target_sig = 14.0 * ti.exp(-d * d * 280.0)
+            target_sig = 22.0 * ti.exp(-d * d * 220.0)
         rgb, sig = mlp_forward(q)
         feat = encode(q)
         hid = ti.Vector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
@@ -299,21 +299,33 @@ def train_batch():
 
 @ti.kernel
 def render_nerf(yaw: float):
+    # Tiny MLP occupancy is a thin band; pick the densest sample on the ray
+    # so the field is visible, then alpha-composite a few neighbours.
     for i, j in pixels:
         u = (i + 0.5) / W
         v = (j + 0.5) / H
         ro, rd = camera(u, v, yaw)
         col = tm.vec3(0.0)
         T = 1.0
-        t = 0.25
-        for _ in range(56):
+        t = 0.30
+        best_sig = 0.0
+        best_rgb = tm.vec3(0.45, 0.55, 0.70)
+        for _ in range(48):
             q = ro + rd * t
             rgb, sig = mlp_forward(q)
-            dt = 0.055
-            alpha = 1.0 - ti.exp(-sig * dt)
+            if sig > best_sig:
+                best_sig = sig
+                best_rgb = rgb
+            dt = 0.06
+            alpha = 1.0 - ti.exp(-sig * dt * 4.0)
+            alpha = ti.min(alpha, 0.92)
             col += T * alpha * rgb
             T *= 1.0 - alpha
             t += dt
+        if T > 0.45 and best_sig > 1.2:
+            a = ti.min(0.92, best_sig / 8.0)
+            col += T * a * best_rgb
+            T *= 1.0 - a
         col += T * tm.vec3(0.45, 0.55, 0.70)
         pixels[i, j] = col
 
