@@ -24,6 +24,4 @@ kaggle kernels output yaoyunqqq/diffusiongemma-dual-t4 -p kaggle/outputs
 
 Notebook: https://www.kaggle.com/code/yaoyunqqq/diffusiongemma-dual-t4
 
-First dual-T4 run (kernel v1) loaded **FP16 + CPU offload** across 2× Tesla T4 (12.0 + 13.7 GiB allocated) and generated in **57.7 s**. v2 loaded NF4 but crashed in RoPE during generate. v3 uses the proven FP16 offload path and writes `generation.txt` as a string.
-
-Sample answer is in `kaggle/diffusiongemma-dual-t4/sample_generation.txt`.
+First dual-T4 run that **completed** is kernel v3: **FP16 + CPU offload** on 2× Tesla T4 (12.0 + 13.7 GiB), load 79 s, generate **56.2 s**. v1 already generated but failed writing `generation.txt`; v2 NF4 loaded then crashed in RoPE. Sample answer: `kaggle/diffusiongemma-dual-t4/sample_generation.txt`.
