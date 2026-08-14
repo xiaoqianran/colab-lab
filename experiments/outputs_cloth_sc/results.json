@@ -1,0 +1,33 @@
+{
+  "arch": "Arch.cuda",
+  "grid": "56x56",
+  "vertices": 3249,
+  "self_collision": true,
+  "thickness": 0.014,
+  "frames": 200,
+  "elapsed_s": 8.688,
+  "ms_per_frame": 43.44,
+  "realtime_ratio": 2.56,
+  "images": [
+    {
+      "frame": 0,
+      "path": "/content/taichi_cloth_sc/cloth_000.png"
+    },
+    {
+      "frame": 40,
+      "path": "/content/taichi_cloth_sc/cloth_040.png"
+    },
+    {
+      "frame": 80,
+      "path": "/content/taichi_cloth_sc/cloth_080.png"
+    },
+    {
+      "frame": 130,
+      "path": "/content/taichi_cloth_sc/cloth_130.png"
+    },
+    {
+      "frame": 199,
+      "path": "/content/taichi_cloth_sc/cloth_199.png"
+    }
+  ]
+}

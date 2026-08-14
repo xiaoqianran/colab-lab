@@ -1,0 +1,35 @@
+{
+  "arch": "Arch.cuda",
+  "particles": 5184,
+  "grid": 48,
+  "frames": 180,
+  "elapsed_s": 19.253,
+  "ms_per_substep": 0.052,
+  "materials": {
+    "0": "snow",
+    "1": "sand",
+    "2": "dough"
+  },
+  "images": [
+    {
+      "frame": 0,
+      "path": "/content/taichi_mpm3d/mpm3d_000.png"
+    },
+    {
+      "frame": 30,
+      "path": "/content/taichi_mpm3d/mpm3d_030.png"
+    },
+    {
+      "frame": 70,
+      "path": "/content/taichi_mpm3d/mpm3d_070.png"
+    },
+    {
+      "frame": 120,
+      "path": "/content/taichi_mpm3d/mpm3d_120.png"
+    },
+    {
+      "frame": 179,
+      "path": "/content/taichi_mpm3d/mpm3d_179.png"
+    }
+  ]
+}

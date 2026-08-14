@@ -86,21 +86,21 @@ def encode(p):
 @ti.func
 def mlp_forward(p):
     feat = encode(p)
-    h = ti.Vector([0.0] * HID)
+    hvals = ti.Vector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
     for i in ti.static(range(HID)):
         s = b1[i]
         for j in ti.static(range(IN_DIM)):
             s += w1[i, j] * feat[j]
-        h[i] = ti.max(s, 0.0)
+        hvals[i] = ti.max(s, 0.0)
     out = tm.vec4(0.0)
     for i in ti.static(range(4)):
         s = b2[i]
         for j in ti.static(range(HID)):
-            s += w2[i, j] * h[j]
+            s += w2[i, j] * hvals[j]
         out[i] = s
     rgb = tm.vec3(1.0 / (1.0 + ti.exp(-out.x)), 1.0 / (1.0 + ti.exp(-out.y)), 1.0 / (1.0 + ti.exp(-out.z)))
     sig = ti.log(1.0 + ti.exp(out.w))
-    return rgb, sig, feat, h, out
+    return rgb, sig
 
 
 @ti.func
@@ -229,7 +229,20 @@ def train_batch(yaw: float):
             n = gt_normal(p)
             target = gt_color(p, n, mid)
             q = p
-        rgb, sig, feat, hid, out = mlp_forward(q)
+        rgb, sig = mlp_forward(q)
+        feat = encode(q)
+        hid = ti.Vector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        for i in ti.static(range(HID)):
+            s = b1[i]
+            for j in ti.static(range(IN_DIM)):
+                s += w1[i, j] * feat[j]
+            hid[i] = ti.max(s, 0.0)
+        out = tm.vec4(0.0)
+        for i in ti.static(range(4)):
+            s = b2[i]
+            for j in ti.static(range(HID)):
+                s += w2[i, j] * hid[j]
+            out[i] = s
         diff = rgb - target
         srgb = rgb
         d_out = tm.vec4(
@@ -238,7 +251,7 @@ def train_batch(yaw: float):
             2.0 * diff.z * srgb.z * (1.0 - srgb.z),
             0.05 * ((sig if hit == 1 else 0.0) - (2.5 if hit == 1 else 0.0)),
         )
-        dh = ti.Vector([0.0] * HID)
+        dh = ti.Vector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
         for i in ti.static(range(4)):
             ti.atomic_add(gb2[i], d_out[i])
             for j in ti.static(range(HID)):
@@ -262,7 +275,7 @@ def render_nerf(yaw: float):
         for s in range(32):
             t = 0.35 + s * 0.10
             q = ro + rd * t
-            rgb, sig, _, _, _ = mlp_forward(q)
+            rgb, sig = mlp_forward(q)
             alpha = 1.0 - ti.exp(-sig * 0.10)
             col += T * alpha * rgb
             T *= 1.0 - alpha
@@ -396,6 +409,7 @@ def save(name):
 def main():
     yaw0 = 0.55
     results = {"arch": str(ti.cfg.arch), "images": {}}
+    print("render gt", flush=True)
 
     render_gt(yaw0)
     results["images"]["gt"] = save("01_gt.png")
