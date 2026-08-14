@@ -23,3 +23,7 @@ kaggle kernels output yaoyunqqq/diffusiongemma-dual-t4 -p kaggle/outputs
 ```
 
 Notebook: https://www.kaggle.com/code/yaoyunqqq/diffusiongemma-dual-t4
+
+First dual-T4 run (kernel v1) loaded **FP16 + CPU offload** across 2× Tesla T4 (12.0 + 13.7 GiB allocated) and generated in **57.7 s**. NF4/INT8 failed because a 14 GiB cap spilled modules to CPU without `llm_int8_enable_fp32_cpu_offload`. v2 retries NF4 on full GPU memory and writes `generation.txt` as a string.
+
+Sample answer is in `kaggle/diffusiongemma-dual-t4/sample_generation.txt`.
