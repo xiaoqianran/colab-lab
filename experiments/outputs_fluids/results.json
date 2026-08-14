@@ -1,0 +1,48 @@
+{
+  "arch": "Arch.cuda",
+  "images": {},
+  "sph": {
+    "particles": 6400,
+    "elapsed_s": 2.691,
+    "images": [
+      {
+        "frame": 0,
+        "path": "/content/taichi_fluids/sph_000.png"
+      },
+      {
+        "frame": 40,
+        "path": "/content/taichi_fluids/sph_040.png"
+      },
+      {
+        "frame": 90,
+        "path": "/content/taichi_fluids/sph_090.png"
+      },
+      {
+        "frame": 160,
+        "path": "/content/taichi_fluids/sph_160.png"
+      }
+    ]
+  },
+  "shallow_water": {
+    "grid": 192,
+    "elapsed_s": 0.31,
+    "images": [
+      {
+        "frame": 0,
+        "path": "/content/taichi_fluids/shallow_000.png"
+      },
+      {
+        "frame": 40,
+        "path": "/content/taichi_fluids/shallow_040.png"
+      },
+      {
+        "frame": 90,
+        "path": "/content/taichi_fluids/shallow_090.png"
+      },
+      {
+        "frame": 180,
+        "path": "/content/taichi_fluids/shallow_180.png"
+      }
+    ]
+  }
+}

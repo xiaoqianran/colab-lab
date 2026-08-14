@@ -1,0 +1,15 @@
+{
+  "arch": "Arch.cuda",
+  "resolution": "640x360",
+  "images": {
+    "noisy_8spp": "/content/taichi_denoise/01_noisy_8spp.png",
+    "spatial_8spp": "/content/taichi_denoise/02_spatial_8spp.png",
+    "temporal_64spp": "/content/taichi_denoise/03_temporal_64spp.png",
+    "svgf_lite": "/content/taichi_denoise/04_svgf_lite.png",
+    "ref_48spp": "/content/taichi_denoise/05_ref_48spp.png"
+  },
+  "t_8spp": 1.619,
+  "t_spatial": 4.33,
+  "t_temporal": 0.203,
+  "t_48spp": 0.044
+}

@@ -26,3 +26,26 @@ Outputs: `/content/taichi_experiments/` (copies in `experiments/outputs/`).
 - Runtime is CPU-only; kernels still beat vectorized NumPy on nested iteration (Mandelbrot).
 - `from __future__ import annotations` breaks Taichi 1.7 kernel type hints (annotations become strings).
 - Kernel argument types must be Python `float`, not `ti.f32`.
+
+## T4 physics / graphics suite
+
+Run on a Colab T4, then **stop the session immediately**:
+
+```bash
+colab --auth=adc new -s t4-lab --gpu T4
+colab --auth=adc install -s t4-lab taichi numpy
+colab --auth=adc exec -s t4-lab -f experiments/taichi_mpm3d.py --timeout 600
+colab --auth=adc exec -s t4-lab -f experiments/taichi_cloth_selfcol.py --timeout 600
+colab --auth=adc exec -s t4-lab -f experiments/taichi_fluids.py --timeout 600
+colab --auth=adc exec -s t4-lab -f experiments/taichi_neural_gsplat.py --timeout 600
+colab --auth=adc exec -s t4-lab -f experiments/taichi_pt_denoise.py --timeout 900
+colab --auth=adc stop -s t4-lab
+```
+
+| Script | What | T4 result |
+| --- | --- | --- |
+| `taichi_mpm3d.py` | 3D MLS-MPM snow / sand / dough | 5184 particles, 48³, 180 frames, **19.25 s**, 0.052 ms/substep |
+| `taichi_cloth_selfcol.py` | XPBD cloth + spatial-hash self-collision | 56×56, 3249 verts, 200 frames, **8.69 s**, 2.56× realtime |
+| `taichi_fluids.py` | WCSPH dam break + shallow-water rain | SPH 6400 **2.69 s**; shallow 192² **0.31 s** |
+| `taichi_neural_gsplat.py` | Tiny PE-MLP neural field + ~6k Gaussian splats | MLP 120 step **111 s** (point MSE down, volume still sky); 6144 Gaussians turntable **0.50 s** |
+| `taichi_pt_denoise.py` | Path tracing 8 spp vs A-trous / temporal / SVGF-lite vs 48 spp | 640×360; 8 spp **1.62 s**; A-trous **4.33 s**; temporal **0.20 s** |

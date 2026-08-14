@@ -1,0 +1,47 @@
+{
+  "arch": "Arch.cuda",
+  "images": {
+    "gt": "/content/taichi_neural/01_gt.png",
+    "nerf_init": "/content/taichi_neural/02_nerf_init.png",
+    "nerf_fit": "/content/taichi_neural/03_nerf_fit.png",
+    "gsplat_turn": [
+      "/content/taichi_neural/04_gsplat_00.png",
+      "/content/taichi_neural/04_gsplat_01.png",
+      "/content/taichi_neural/04_gsplat_02.png",
+      "/content/taichi_neural/04_gsplat_03.png",
+      "/content/taichi_neural/04_gsplat_04.png",
+      "/content/taichi_neural/04_gsplat_05.png",
+      "/content/taichi_neural/04_gsplat_06.png",
+      "/content/taichi_neural/04_gsplat_07.png"
+    ]
+  },
+  "nerf_train_s": 111.219,
+  "losses": [
+    {
+      "step": 0,
+      "mse": 4.09788
+    },
+    {
+      "step": 20,
+      "mse": 2.88429
+    },
+    {
+      "step": 40,
+      "mse": 0.82225
+    },
+    {
+      "step": 60,
+      "mse": 0.69281
+    },
+    {
+      "step": 80,
+      "mse": 0.65558
+    },
+    {
+      "step": 100,
+      "mse": 0.63631
+    }
+  ],
+  "gsplat_s": 0.497,
+  "gaussians": 6144
+}
