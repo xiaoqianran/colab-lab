@@ -1,0 +1,4 @@
+
+# Kaggle local downloads and secrets (never commit tokens)
+kaggle/outputs/
+.kaggle/
