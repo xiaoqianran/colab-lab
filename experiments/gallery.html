@@ -193,11 +193,11 @@
 
   <section>
     <h2>T4 · 神经场 + Gaussian Splatting</h2>
-    <p class="note">对解析 SDF 场景：先拟合一个带位置编码的小 MLP（表面带采样 + 体积渲染），再把同一场景表示成 6144 个高斯点做加权融合转盘（<strong>0.51 s</strong>）。这是玩具级 NeRF / 3DGS，不是 Instant-NGP 或完整 3DGS 训练。</p>
+    <p class="note">对解析 SDF 场景：先拟合一个 32 隐层、位置编码的小 MLP（T4 上 120 step，约 <strong>111 s</strong>，点样本 MSE 下降）。体积 / 峰值着色仍然接近天空——这个体量的手工 SGD 撑不起可辨认的 NeRF。同一场景的 <strong>6144 Gaussian splat</strong> 转盘才看得出球、盒和地板（<strong>0.50 s</strong>）。玩具级，不是 Instant-NGP / 完整 3DGS 训练。</p>
     <div class="grid">
       <figure class="card"><img src="outputs_neural/01_gt.png" alt="gt" /><figcaption><strong>GT</strong><em>解析 SDF 着色</em></figcaption></figure>
       <figure class="card"><img src="outputs_neural/02_nerf_init.png" alt="nerf init" /><figcaption><strong>NeRF 初始</strong><em>随机 MLP</em></figcaption></figure>
-      <figure class="card"><img src="outputs_neural/03_nerf_fit.png" alt="nerf fit" /><figcaption><strong>NeRF 拟合后</strong><em>120 step SGD · 表面带密度</em></figcaption></figure>
+      <figure class="card"><img src="outputs_neural/03_nerf_fit.png" alt="nerf fit" /><figcaption><strong>NeRF 拟合后</strong><em>120 step · MSE 下降，形状仍糊在天空里</em></figcaption></figure>
     </div>
     <h2>Gaussian splat 转盘</h2>
     <div class="film">
