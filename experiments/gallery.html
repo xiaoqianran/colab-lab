@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <base href="https://raw.githubusercontent.com/xiaoqianran/colab-lab/cursor/taichi-colab-experiments-5301/experiments/" />
+  <base href="https://raw.githubusercontent.com/xiaoqianran/colab-lab/cursor/taichi-t4-physics-suite-8a91/experiments/" />
   <title>Taichi × Colab 试验结果</title>
   <style>
     :root {
@@ -117,7 +117,7 @@
 <body>
   <header>
     <h1>Taichi × Colab 试验结果</h1>
-    <p class="sub">CPU 套件、T4 上的 Julia / MPM88，以及一套 Blender 风格的 3D 工作室渲染（SDF 视口 + 路径追踪）。Colab 无 GUI，全部 <code>ti.tools.imwrite</code> 出图。跑完即停 T4。</p>
+    <p class="sub">CPU 套件、T4 上的 Julia / MPM88 / 丝绸，再加上 3D MPM（雪沙面团）、自碰撞布料、SPH / 浅水、神经场 + Gaussian Splatting、路径追踪时空去噪。Colab 无 GUI，全部 <code>ti.tools.imwrite</code> 出图。跑完即停 T4。</p>
     <div class="pills">
       <span class="pill">Taichi 1.7.4</span>
       <span class="pill">CPU x64</span>
@@ -157,6 +157,70 @@
       <div class="stat"><b>MPM</b><span>雪、沙、面团、稠流体好看。不是工程 CFD：连续介质本构是玩具级，裂面、表面张力、可压缩性对不上实验室数据。</span></div>
       <div class="stat"><b>流体</b><span>SPH/MPM 做溅射、黏液可以。做不到飞机机翼升力、管道压降那种网格收敛的 Navier–Stokes。</span></div>
       <div class="stat"><b>刚体</b><span>解析球/盒碰撞很稳。堆一千个带摩擦的凸包、可破坏、连续碰撞检测，不是 Taichi 开箱能力。</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>T4 · 3D MPM（雪 / 沙 / 面团）</h2>
+    <p class="note">48³ 网格，约 1.5 万粒子，三种本构同时下落：硬化雪、Drucker-Prager 风沙、黏软面团。比 2D mpm88 多了变形梯度 <code>F</code> 和塑性。仍是演示级连续介质，不是工程本构。</p>
+    <div class="grid">
+      <figure class="card"><img src="outputs_mpm3d/mpm3d_000.png" alt="mpm3d 0" /><figcaption><strong>frame 0</strong><em>三块物料悬在盒中</em></figcaption></figure>
+      <figure class="card"><img src="outputs_mpm3d/mpm3d_070.png" alt="mpm3d 70" /><figcaption><strong>frame 70</strong><em>落地、开始铺开</em></figcaption></figure>
+      <figure class="card"><img src="outputs_mpm3d/mpm3d_179.png" alt="mpm3d 179" /><figcaption><strong>frame 179</strong><em>雪碎、沙堆、面团黏</em></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>T4 · 自碰撞布料</h2>
+    <p class="note">56×56 XPBD + 空间哈希粒子自碰撞。没有自碰撞时布会穿自己、角会翘；有了之后褶才能叠起来。还不是纱线级丝绸。</p>
+    <div class="grid">
+      <figure class="card"><img src="outputs_cloth_sc/cloth_000.png" alt="cloth 0" /><figcaption><strong>frame 0</strong><em>平铺</em></figcaption></figure>
+      <figure class="card"><img src="outputs_cloth_sc/cloth_080.png" alt="cloth 80" /><figcaption><strong>frame 80</strong><em>罩住球体</em></figcaption></figure>
+      <figure class="card"><img src="outputs_cloth_sc/cloth_199.png" alt="cloth 199" /><figcaption><strong>frame 199</strong><em>自碰撞让层叠起来</em></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>T4 · SPH 溃坝 + 浅水方程</h2>
+    <p class="note">弱可压缩 SPH 溅射，以及 192² 浅水高度场（雨滴高斯源）。能做水花和涟漪，做不到机翼升力。</p>
+    <div class="grid">
+      <figure class="card"><img src="outputs_fluids/sph_000.png" alt="sph 0" /><figcaption><strong>SPH 0</strong><em>水柱</em></figcaption></figure>
+      <figure class="card"><img src="outputs_fluids/sph_090.png" alt="sph 90" /><figcaption><strong>SPH 90</strong><em>溃坝溅开</em></figcaption></figure>
+      <figure class="card"><img src="outputs_fluids/shallow_000.png" alt="sw 0" /><figcaption><strong>浅水 0</strong><em>三滴落下</em></figcaption></figure>
+      <figure class="card"><img src="outputs_fluids/shallow_180.png" alt="sw 180" /><figcaption><strong>浅水 180</strong><em>干涉涟漪</em></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>T4 · 神经场 + Gaussian Splatting</h2>
+    <p class="note">对解析 SDF 场景：先拟合一个带位置编码的小 MLP（体积渲染），再把同一场景表示成 ~6k 个高斯点做加权融合转盘。这是玩具级 NeRF / 3DGS，不是 Instant-NGP 或完整 3DGS 训练。</p>
+    <div class="grid">
+      <figure class="card"><img src="outputs_neural/01_gt.png" alt="gt" /><figcaption><strong>GT</strong><em>解析 SDF 着色</em></figcaption></figure>
+      <figure class="card"><img src="outputs_neural/02_nerf_init.png" alt="nerf init" /><figcaption><strong>NeRF 初始</strong><em>随机 MLP</em></figcaption></figure>
+      <figure class="card"><img src="outputs_neural/03_nerf_fit.png" alt="nerf fit" /><figcaption><strong>NeRF 拟合后</strong><em>180 step SGD</em></figcaption></figure>
+    </div>
+    <h2>Gaussian splat 转盘</h2>
+    <div class="film">
+      <img src="outputs_neural/04_gsplat_00.png" alt="gs 0" />
+      <img src="outputs_neural/04_gsplat_01.png" alt="gs 1" />
+      <img src="outputs_neural/04_gsplat_02.png" alt="gs 2" />
+      <img src="outputs_neural/04_gsplat_03.png" alt="gs 3" />
+      <img src="outputs_neural/04_gsplat_04.png" alt="gs 4" />
+      <img src="outputs_neural/04_gsplat_05.png" alt="gs 5" />
+      <img src="outputs_neural/04_gsplat_06.png" alt="gs 6" />
+      <img src="outputs_neural/04_gsplat_07.png" alt="gs 7" />
+    </div>
+  </section>
+
+  <section>
+    <h2>T4 · 路径追踪 + 时空去噪</h2>
+    <p class="note">8 spp 噪声 vs A-trous（G-buffer 边感知）vs 8 帧时间累积 vs SVGF-lite vs 48 spp 暴力参考。去噪比盲目加 spp 更值：同样时间噪点下去、边缘靠法线/深度守住。</p>
+    <div class="grid">
+      <figure class="card"><img src="outputs_denoise/01_noisy_8spp.png" alt="noisy" /><figcaption><strong>8 spp</strong><em>原始噪声</em></figcaption></figure>
+      <figure class="card"><img src="outputs_denoise/02_spatial_8spp.png" alt="spatial" /><figcaption><strong>A-trous</strong><em>空间去噪</em></figcaption></figure>
+      <figure class="card"><img src="outputs_denoise/03_temporal_64spp.png" alt="temporal" /><figcaption><strong>时间累积</strong><em>8×8 spp</em></figcaption></figure>
+      <figure class="card"><img src="outputs_denoise/04_svgf_lite.png" alt="svgf" /><figcaption><strong>SVGF-lite</strong><em>时间 + 空间</em></figcaption></figure>
+      <figure class="card wide"><img src="outputs_denoise/05_ref_48spp.png" alt="ref" /><figcaption><strong>48 spp 参考</strong><em>暴力加样本</em></figcaption></figure>
     </div>
   </section>
 
@@ -297,7 +361,7 @@
   </section>
 
   <dialog id="zoom"><img alt="zoomed result" /></dialog>
-  <footer>打开 experiments/gallery.html · 图片相对路径在 outputs/ 与 outputs_t4/</footer>
+  <footer>打开 experiments/gallery.html · 图片在 outputs/、outputs_t4/、outputs_mpm3d/、outputs_cloth_sc/、outputs_fluids/、outputs_neural/、outputs_denoise/</footer>
   <script>
     const dlg = document.getElementById("zoom");
     const dlgImg = dlg.querySelector("img");

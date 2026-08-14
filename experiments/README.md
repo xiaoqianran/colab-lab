@@ -26,3 +26,26 @@ Outputs: `/content/taichi_experiments/` (copies in `experiments/outputs/`).
 - Runtime is CPU-only; kernels still beat vectorized NumPy on nested iteration (Mandelbrot).
 - `from __future__ import annotations` breaks Taichi 1.7 kernel type hints (annotations become strings).
 - Kernel argument types must be Python `float`, not `ti.f32`.
+
+## T4 physics / graphics suite
+
+Run on a Colab T4, then **stop the session immediately**:
+
+```bash
+colab --auth=adc new -s t4-lab --gpu T4
+colab --auth=adc install -s t4-lab taichi numpy
+colab --auth=adc exec -s t4-lab -f experiments/taichi_mpm3d.py --timeout 600
+colab --auth=adc exec -s t4-lab -f experiments/taichi_cloth_selfcol.py --timeout 600
+colab --auth=adc exec -s t4-lab -f experiments/taichi_fluids.py --timeout 600
+colab --auth=adc exec -s t4-lab -f experiments/taichi_neural_gsplat.py --timeout 600
+colab --auth=adc exec -s t4-lab -f experiments/taichi_pt_denoise.py --timeout 900
+colab --auth=adc stop -s t4-lab
+```
+
+| Script | What |
+| --- | --- |
+| `taichi_mpm3d.py` | 3D MLS-MPM snow / sand / dough |
+| `taichi_cloth_selfcol.py` | XPBD cloth + spatial-hash self-collision |
+| `taichi_fluids.py` | WCSPH dam break + shallow-water rain |
+| `taichi_neural_gsplat.py` | Tiny PE-MLP neural field + ~6k Gaussian splats |
+| `taichi_pt_denoise.py` | Path tracing 8 spp vs A-trous / temporal / SVGF-lite vs 48 spp |
