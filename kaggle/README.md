@@ -2,7 +2,7 @@
 
 Kaggle notebook for `google/diffusiongemma` (26B-A4B-it) on **2× Tesla T4**.
 
-BF16 weights are ~52 GB. Each T4 has 16 GB, so the notebook loads **NF4 4-bit** (then 8-bit, then FP16+CPU offload) and shards with `device_map="auto"`.
+BF16 weights are ~52 GB. Each T4 has 16 GB. The working path is **FP16 + `device_map="auto"` + CPU offload**. NF4 can load on dual T4 but `generate()` currently hits a RoPE shape error in bitsandbytes, so it is not the default.
 
 ## Auth (do not commit the token)
 
@@ -24,6 +24,6 @@ kaggle kernels output yaoyunqqq/diffusiongemma-dual-t4 -p kaggle/outputs
 
 Notebook: https://www.kaggle.com/code/yaoyunqqq/diffusiongemma-dual-t4
 
-First dual-T4 run (kernel v1) loaded **FP16 + CPU offload** across 2× Tesla T4 (12.0 + 13.7 GiB allocated) and generated in **57.7 s**. NF4/INT8 failed because a 14 GiB cap spilled modules to CPU without `llm_int8_enable_fp32_cpu_offload`. v2 retries NF4 on full GPU memory and writes `generation.txt` as a string.
+First dual-T4 run (kernel v1) loaded **FP16 + CPU offload** across 2× Tesla T4 (12.0 + 13.7 GiB allocated) and generated in **57.7 s**. v2 loaded NF4 but crashed in RoPE during generate. v3 uses the proven FP16 offload path and writes `generation.txt` as a string.
 
 Sample answer is in `kaggle/diffusiongemma-dual-t4/sample_generation.txt`.
