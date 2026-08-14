@@ -77,6 +77,7 @@ def substep():
     for p in x:
         Xp = x[p] * inv_dx
         base = ti.cast(Xp - 0.5, ti.i32)
+        base = ti.max(ti.Vector([0, 0, 0]), ti.min(ti.Vector([n_grid - 3, n_grid - 3, n_grid - 3]), base))
         fx = Xp - ti.cast(base, ti.f32)
         w = [0.5 * (1.5 - fx) ** 2, 0.75 - (fx - 1.0) ** 2, 0.5 * (fx - 0.5) ** 2]
         F[p] = (ti.Matrix.identity(ti.f32, 3) + dt * C[p]) @ F[p]
@@ -149,6 +150,7 @@ def substep():
     for p in x:
         Xp = x[p] * inv_dx
         base = ti.cast(Xp - 0.5, ti.i32)
+        base = ti.max(ti.Vector([0, 0, 0]), ti.min(ti.Vector([n_grid - 3, n_grid - 3, n_grid - 3]), base))
         fx = Xp - ti.cast(base, ti.f32)
         w = [0.5 * (1.5 - fx) ** 2, 0.75 - (fx - 1.0) ** 2, 0.5 * (fx - 0.5) ** 2]
         new_v = tm.vec3(0.0)
@@ -162,6 +164,11 @@ def substep():
             new_C += 4.0 * inv_dx * weight * g_v.outer_product(dpos)
         v[p], C[p] = new_v, new_C
         x[p] += dt * v[p]
+        lo = (bound + 1) * dx
+        hi = 1.0 - (bound + 1) * dx
+        x[p].x = ti.min(hi, ti.max(lo, x[p].x))
+        x[p].y = ti.min(hi, ti.max(lo, x[p].y))
+        x[p].z = ti.min(hi, ti.max(lo, x[p].z))
 
 
 @ti.kernel
