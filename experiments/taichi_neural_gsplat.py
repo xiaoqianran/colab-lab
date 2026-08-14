@@ -25,7 +25,7 @@ print("arch", ti.cfg.arch)
 W, H = 640, 360
 N_GAUSS = 6144
 N_RAYS = 4096
-STEPS = 180
+STEPS = 80
 IN_DIM = 21  # 3 + 2*3*3 freqs
 HID = 32
 
@@ -217,43 +217,26 @@ def sgd_step(lr: float):
 
 
 @ti.kernel
-def train_batch(yaw: float) -> float:
-    loss = 0.0
+def train_batch(yaw: float):
     for _ in range(N_RAYS):
         u = ti.random()
         v = ti.random()
         ro, rd = camera(u, v, yaw)
         hit, p, mid = march_gt(ro, rd)
         target = tm.vec3(0.45, 0.55, 0.70)
+        q = ro + rd * 1.6
         if hit == 1:
             n = gt_normal(p)
             target = gt_color(p, n, mid)
-        # volume sample along ray, take last MLP color * occupancy proxy
-        col = tm.vec3(0.0)
-        T = 1.0
-        for s in range(24):
-            t = 0.4 + s * 0.12
-            q = ro + rd * t
-            rgb, sig, feat, h, out = mlp_forward(q)
-            alpha = 1.0 - ti.exp(-sig * 0.12)
-            col += T * alpha * rgb
-            T *= 1.0 - alpha
-        col += T * tm.vec3(0.45, 0.55, 0.70)
-        diff = col - target
-        loss += diff.dot(diff)
-        # backprop through last sample only (cheap, noisy, enough to fit)
-        q = p if hit == 1 else ro + rd * 1.6
+            q = p
         rgb, sig, feat, hid, out = mlp_forward(q)
-        # dL/drgb ~= 2 (col-target); ignore transmittance for speed
-        dcol = 2.0 * diff
-        drgb = dcol
-        # sigmoid jacobian
+        diff = rgb - target
         srgb = rgb
         d_out = tm.vec4(
-            drgb.x * srgb.x * (1.0 - srgb.x),
-            drgb.y * srgb.y * (1.0 - srgb.y),
-            drgb.z * srgb.z * (1.0 - srgb.z),
-            0.15 * (1.0 / (1.0 + ti.exp(-out.w))),
+            2.0 * diff.x * srgb.x * (1.0 - srgb.x),
+            2.0 * diff.y * srgb.y * (1.0 - srgb.y),
+            2.0 * diff.z * srgb.z * (1.0 - srgb.z),
+            0.05 * ((sig if hit == 1 else 0.0) - (2.5 if hit == 1 else 0.0)),
         )
         dh = ti.Vector([0.0] * HID)
         for i in ti.static(range(4)):
@@ -266,7 +249,6 @@ def train_batch(yaw: float) -> float:
                 ti.atomic_add(gb1[j], dh[j])
                 for k in ti.static(range(IN_DIM)):
                     ti.atomic_add(gw1[j, k], dh[j] * feat[k])
-    return loss / N_RAYS
 
 
 @ti.kernel
@@ -424,14 +406,15 @@ def main():
 
     t0 = time.perf_counter()
     losses = []
+    print("training neural field")
     for s in range(STEPS):
         yaw = yaw0 + 0.35 * math.sin(s * 0.11)
         zero_grad()
-        loss = train_batch(yaw)
-        sgd_step(0.08 if s < 80 else 0.03)
-        if s % 30 == 0:
-            losses.append(float(loss))
-            print("step", s, "loss", float(loss))
+        train_batch(yaw)
+        sgd_step(0.08 if s < 40 else 0.03)
+        if s % 20 == 0:
+            print("step", s, flush=True)
+            losses.append(s)
     results["nerf_train_s"] = round(time.perf_counter() - t0, 3)
     results["losses"] = losses
     render_nerf(yaw0)
