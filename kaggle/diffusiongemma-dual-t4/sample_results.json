@@ -1,10 +1,7 @@
 {
   "model_id": "/kaggle/input/models/google/diffusiongemma/transformers/diffusiongemma-26b-a4b-it/1",
   "load_strategy": "fp16-offload",
-  "load_errors": [
-    "nf4: ValueError: Some modules are dispatched on the CPU or the disk. Make sure you have enough GPU RAM to fit the quantized model. If you want to dispatch the model on the CPU or the disk while keeping these modules in 32-bit, you need to set `llm_int8_enable_fp32_cpu_offload=True` and pass a custom `device_map` to `from_pretrained`. Check https://huggingface.co/docs/transformers/main/en/main_classes/quantization#offload-between-cpu-and-gpu for more details. ",
-    "int8: ValueError: Some modules are dispatched on the CPU or the disk. Make sure you have enough GPU RAM to fit the quantized model. If you want to dispatch the model on the CPU or the disk while keeping these modules in 32-bit, you need to set `llm_int8_enable_fp32_cpu_offload=True` and pass a custom `device_map` to `from_pretrained`. Check https://huggingface.co/docs/transformers/main/en/main_classes/quantization#offload-between-cpu-and-gpu for more details. "
-  ],
+  "load_errors": [],
   "transformers": "5.15.0",
   "torch": "2.10.0+cu128",
   "gpu_count": 2,
@@ -12,14 +9,13 @@
     "Tesla T4",
     "Tesla T4"
   ],
-  "generate_s": 57.702,
+  "generate_s": 56.167,
   "prompt": "Explain in 4 short sentences what discrete diffusion language models do.",
-  "text": "<bos><|turn>user\nExplain in 4 short sentences what discrete diffusion language models do.<turn|>\n<|turn>model\n<|channel>thought\n<channel|>Discrete diffusion language models generate text by gradually adding noise to a sequence of tokens until it becomes a set of random symbols. During training, the model learns to reverse this process by predicting the original tokens from the increasingly noisy input. Unlike standard autoregressive models that predict word-by-word, these models refine the entire sequence simultaneously over multiple steps. This approach allows for flexible generation and can better handle global structural constraints within the text.<eos>",
+  "text": "<bos><|turn>user\nExplain in 4 short sentences what discrete diffusion language models do.<turn|>\n<|turn>model\n<|channel>thought\n<channel|>Discrete diffusion language models generate text by gradually transforming a sequence of random tokens into a coherent sentence or paragraph. During training, the model learns to reverse a process that systematically masks or replaces original words with noise. Unlike standard autoregressive models that predict text word-by-word, these models can refine the entire sequence simultaneously. This approach allows for more flexible generation patterns and better handling of global structure within the text.<eos>",
   "memory": {
     "gpu0_alloc_gib": 12.028,
     "gpu0_reserved_gib": 14.049,
     "gpu1_alloc_gib": 13.684,
     "gpu1_reserved_gib": 14.318
-  },
-  "answer": "Discrete diffusion language models generate text by gradually adding noise to a sequence of tokens until it becomes a set of random symbols. During training, the model learns to reverse this process by predicting the original tokens from the increasingly noisy input. Unlike standard autoregressive models that predict word-by-word, these models refine the entire sequence simultaneously over multiple steps. This approach allows for flexible generation and can better handle global structural constraints within the text."
+  }
 }
