@@ -2,7 +2,7 @@
 
 Kaggle notebook for `google/diffusiongemma` (26B-A4B-it) on **2× Tesla T4**.
 
-BF16 weights are ~52 GB. Each T4 has 16 GB. The working path is **FP16 + `device_map="auto"` + CPU offload**. NF4 can load on dual T4 but `generate()` currently hits a RoPE shape error in bitsandbytes, so it is not the default.
+优先把 MoE 专家打成 NF4、注意力保持 FP16，在 2×T4 上尽量不靠 CPU。4-bit generate 若仍撞 RoPE，自动回退到已验证的 FP16 offload。v4 会把整条链路跑完并写出 `results.json`。
 
 ## Auth (do not commit the token)
 
